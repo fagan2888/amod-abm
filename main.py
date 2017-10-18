@@ -10,9 +10,9 @@ from lib.Env import *
 
 if __name__ == "__main__":
 	# path of the routing server
-	exe_loc = './osrm-backend-5.11.0/build/osrm-routed'
+	exe_loc = './osrm-backend-5.11.0/build/osrm-routed.exe'
 	# path of the road network file that the routing server uses
-	map_loc = './osrm-backend-5.11.0/boston_massachusetts.osm.pbf'
+	map_loc = './osrm-backend-5.11.0/build/boston_massachusetts.osm.pbf'
 
 	# if road network is enabled, initialize the routing server
 	# otherwise, use Euclidean distance

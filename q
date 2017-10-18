@@ -1,0 +1,339 @@
+[33mcommit ad66fe06dbf373dc3fe3a35861831ab0a4b1a680[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31mupstream/master[m[33m)[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Sep 14 13:20:13 2017 -0400
+
+    presentation
+
+[33mcommit 608f067edff6e9daa9e6c97051da51d04973e220[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Sep 14 11:16:34 2017 -0400
+
+    Update README.md
+
+[33mcommit be4fa0576d624ab5206b8a0fa9e5d62732cff1d1[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Sep 13 16:29:54 2017 -0400
+
+    update media
+
+[33mcommit 836faf0b92c8c8f0b88f605019118b6af911930d[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Sep 13 16:27:10 2017 -0400
+
+    Update README.md
+
+[33mcommit c907e61e3b1a72e08d63e4f4b1a5bac96583e667[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Sep 13 13:28:58 2017 -0400
+
+    Update README.md
+
+[33mcommit 0ebeb87e146b2468bdbd9f582fdfb259e0c3c756[m
+Merge: 2b4ac14 4317bc2
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Sep 13 11:13:42 2017 -0400
+
+    Merge branch 'master' of https://github.com/wenjian0202/amod-abm
+
+[33mcommit 2b4ac14101ecf585eaedb82a4d3a19c173c40e9f[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Sep 13 11:12:36 2017 -0400
+
+    update main.py
+
+[33mcommit 4317bc2aaf2b0ab73382509f72ea0f22e636b16d[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 22:06:44 2017 -0400
+
+    Update README.md
+
+[33mcommit 07025ff0f56bb4b3a48908220e5f124dea38c01e[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 21:38:16 2017 -0400
+
+    Update README.md
+
+[33mcommit 2c734187c0fcc9c7c071dcdeb8c4dca3e13eb5e4[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 21:05:11 2017 -0400
+
+    Update README.md
+
+[33mcommit 03a90ee8f65807a53f71faec8747ecf4f3c49efd[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 20:40:45 2017 -0400
+
+    osrm v5.11.0
+
+[33mcommit 22311980e278c09c94a22bcbf03107076b0da15e[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 18:31:17 2017 -0400
+
+    Update README.md
+
+[33mcommit a82366b3a5c33bafd76591d040ac7c0ee33274a3[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 18:29:22 2017 -0400
+
+    Update README.md
+
+[33mcommit 93171f190116420a32065b1ae4a105859702958d[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 18:16:53 2017 -0400
+
+    Update README.md
+
+[33mcommit 91c400621442eb49839b9bfd22660ef9e932a849[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 16:22:38 2017 -0400
+
+    Update README.md
+
+[33mcommit df36447777d0b9dbf20a214a967bb8a71a11519f[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 15:41:57 2017 -0400
+
+    Update OsrmEngine.py
+
+[33mcommit 95ce24423fa53860e1d1d9a4e07ff139b156431b[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 14:21:15 2017 -0400
+
+    Update README.md
+
+[33mcommit c70d08666af868a2943f9b08aab7ccb58f648477[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Sep 12 14:11:21 2017 -0400
+
+    media
+
+[33mcommit 84c8d476964fd22695f8717c820a2c6a15e797f2[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Mon Sep 11 22:50:48 2017 -0400
+
+    add comments
+
+[33mcommit ab41234c4c8d9669892c901548ef21d958262cb4[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Mon Sep 11 16:28:21 2017 -0400
+
+    add comments
+
+[33mcommit 08eb8faa73a02fc0af629f7f3ae6812e6909f8ef[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Aug 17 17:22:36 2017 +0800
+
+    clean files
+
+[33mcommit d7bb70705061e3ee18f678c190a1b907e158109e[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Aug 16 15:48:04 2017 +0800
+
+    move out results
+
+[33mcommit 562f0e4357f39fab94b408d338f6c5e27b12f1ce[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Fri Aug 4 16:41:53 2017 +0800
+
+    simulations
+
+[33mcommit dc649f4e20402ee4bc283ada6562fd5332526ea4[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Jul 12 21:45:07 2017 +0100
+
+    simulation runs
+
+[33mcommit c292f7217d5641ae51b9e098cd09071d1c12cf5f[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Jul 4 11:34:05 2017 +0100
+
+    statistics
+
+[33mcommit 0028ed42147afc63ff83bbf7654e05ff2763d878[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Tue Jul 4 10:14:07 2017 +0100
+
+    in advance requests added
+
+[33mcommit a7e46c1d3a322c0528e3475bd03e40a6ab348e6c[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Jun 28 14:13:33 2017 +0100
+
+    another run
+
+[33mcommit 4346843cbc8cf1a9e0c714957d904d7dcb3d106e[m[33m ([m[1;31mupstream/rebl[m[33m, [m[1;31morigin/rebl[m[33m)[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Jun 28 14:03:17 2017 +0100
+
+    dqn rebl tested and integrated
+
+[33mcommit 9b3da2b0c87c502beb5f3d7c35723cc45c7a420d[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Jun 28 11:20:41 2017 +0100
+
+    dqn
+
+[33mcommit eec98d73ffa48f801773bf1c22f2a7c6b708d438[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Fri Jun 16 00:57:31 2017 +0100
+
+    add orp and sar
+
+[33mcommit 5ff8cc47ca5d2e8d20a4bb51f35222546318140e[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Jun 15 23:41:39 2017 +0100
+
+    add orp and sar
+
+[33mcommit 6a2c286441a05bd54ae557fcb0172152270c4872[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Jun 15 15:37:05 2017 +0100
+
+    three demand cases
+
+[33mcommit d4b7e62776054b14f8477474528a0c7f670364e0[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Jun 15 11:12:51 2017 +0100
+
+    direct routing
+
+[33mcommit 9f63b995da68090fe86134a97b719d34749ea952[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Jun 15 10:26:26 2017 +0100
+
+    add animation
+
+[33mcommit 0125eb9206336b19b803255ac8d9a1abcd951090[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu Jun 15 09:53:00 2017 +0100
+
+    add animation
+
+[33mcommit 7d50ed3b261140e8dd011964d312aa11a5fc04b6[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Fri Jun 9 10:11:21 2017 +0100
+
+    simulation runs
+
+[33mcommit aba4b982b0c2075e28a72f23abbba16ffff61bd4[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Fri Jun 2 14:28:01 2017 -0400
+
+    add rebalancing and test
+
+[33mcommit 16221ec9bf432643fb40ab27c7fad160d2003525[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed May 31 01:51:11 2017 -0400
+
+    add simulated annealing
+
+[33mcommit d3b5f9b64d94277aa05a576e5e4720260504140f[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Sun May 21 21:26:02 2017 -0400
+
+    add amod.py
+
+[33mcommit 763d8785517aca78fbdddba9ab938ae48529236f[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Sun May 21 18:43:14 2017 -0400
+
+    add time constraints
+
+[33mcommit d1144bbfc39e85a0ae78db2e48ac3707c8f04cf1[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Sat May 6 15:47:17 2017 -0400
+
+    improve model
+
+[33mcommit e3b691e16fd854c808f4e87dd91e68dc7f9c5b01[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Fri May 5 11:30:00 2017 -0400
+
+    add insertion heuristics
+
+[33mcommit 818da6c6cac9935ca4db09c176e889f7c81e4087[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu May 4 22:55:40 2017 -0400
+
+    add class Model
+
+[33mcommit 8d254e870c4080a57e763b06b5730949f6e642cf[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu May 4 22:25:10 2017 -0400
+
+    add class Model
+
+[33mcommit 927d56f22bb6a878639b7d7a0c3bbd6e36608a5e[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu May 4 17:20:11 2017 -0400
+
+    add vehicle mote_to_time
+
+[33mcommit 2a2e9737510794a6a60d77566d156dfc85ea1770[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Thu May 4 14:33:02 2017 -0400
+
+    add Agents.py
+
+[33mcommit 19102d1440190cd4b8e6bd4928f0e1362bdc60eb[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed May 3 19:15:27 2017 -0400
+
+    add mplleaflet
+
+[33mcommit 374d32ac986ce1627fd55413c9dd62b83e990b2c[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed May 3 15:34:40 2017 -0400
+
+    Delete osrm-backend-5.6.0.zip
+
+[33mcommit 7c346bfbb6d0d104bb030fd8203fda7af542b5f2[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Mon May 1 21:41:06 2017 -0400
+
+    osrm added and tested
+
+[33mcommit ca4ea823c220377f47aa37c4d6e35de44613ce2b[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 17:11:56 2017 -0400
+
+    Delete test.py
+
+[33mcommit c16fc86535c9e69c0815e0d1cd2e0425651d3a79[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 17:10:25 2017 -0400
+
+    add something
+
+[33mcommit f8c97058794802c29b38eb7e50abe86100eb1e28[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 17:08:53 2017 -0400
+
+    Delete test.py
+
+[33mcommit a1ec6b4a2f909b6aa9a27fab8ab373b6c585a55a[m
+Merge: 4f7b22c 4b1d112
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 17:08:06 2017 -0400
+
+    Merge pull request #1 from wenjian0202/newbranch
+    
+    add test.py again
+
+[33mcommit 4b1d112dd18a94bdea5f5276c29774621aa311c5[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 16:59:46 2017 -0400
+
+    add test.py again
+
+[33mcommit 4f7b22c455ead69ce98529cbf0356edb775a9c52[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 16:56:27 2017 -0400
+
+    add test.py
+
+[33mcommit 9aa346eb35900db712f7d5d8c083d142efb7cf14[m
+Author: wenjian0202 <wenjian0202@gmail.com>
+Date:   Wed Apr 26 14:56:15 2017 -0400
+
+    Initial commit
