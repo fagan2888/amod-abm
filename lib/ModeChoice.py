@@ -21,7 +21,7 @@ B_TRANSITNUMTRANSFERS = -0.452
 B_TRANSITWALK_TT = -0.536
 B_WALK_TT    = -1.21
 MU_TRANSIT = 3.23
-BETA_AVPT_CAR_TT = -0.37
+# BETA_AVPT_CAR_TT = -0.37
 BETA_AVPT_PT_TT = -0.362
 BETA_AVPT_COST = -0.144
 
@@ -55,7 +55,7 @@ def transit_utility_calc(transit_utility, MU_TRANSIT):
 		b = np.exp(MU_TRANSIT*transit_utility)
 	return b 
 
-def main_CBD(filename, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR):
+def main_CBD(filename, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR):
 	df = pd.read_csv(filename)
 
 	'''data preparation'''
@@ -128,7 +128,7 @@ def main_CBD(filename, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR):
 
 	return df_return
 
-def main_intrazonal(filename, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR):
+def main_intrazonal(filename, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR):
 	df = pd.read_csv(filename)
 	
 	'''data preparation'''
@@ -194,16 +194,16 @@ def main_intrazonal(filename, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR):
 	df_return = df[['ttrip_id','oeast','onrth','deast','denrth','expan_fac','expan_fac/10','AVPT_choice']]
 	return df_return
 
-def set_avpt_demand(step, demand_matrix, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR):
+def set_avpt_demand(step, demand_matrix, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR):
 	'''define file paths for each type of trip being modelled, saved in seperate csvs'''
 	filepath_cbd = "lib/ModeData/data_olddata_cbd.csv"
 	filepath_intrabus = "lib/ModeData/data_olddata_intrazonalbus.csv"
 	filepath_intrarail = "lib/ModeData/data_olddata_intrazonalrail.csv"
 
 	'''generating seperate dataframes for each new type of trips being modelled'''
-	df1 = main_CBD(filepath_cbd, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR)
-	df2 = main_intrazonal(filepath_intrabus, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR)
-	df3 = main_intrazonal(filepath_intrarail, ASC_AVPT, WAIT_TIME, DETOUR_FACTOR)
+	df1 = main_CBD(filepath_cbd, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR)
+	df2 = main_intrazonal(filepath_intrabus, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR)
+	df3 = main_intrazonal(filepath_intrarail, ASC_AVPT, BETA_AVPT_CAR_TT, WAIT_TIME, DETOUR_FACTOR)
 	df = df1.append(df2.append(df3, ignore_index=True), ignore_index=True)
 	total_volume = 0.00
 	for idx in range(len(df)):

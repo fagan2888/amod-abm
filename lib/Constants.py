@@ -5,10 +5,15 @@ constants are found here
 from lib.Demand import *
 
 # fleet size and vehicle capacity
-FLEET_SIZE = [50]
+FLEET_SIZE = [20, 20, 20, 20, 20]
 VEH_CAPACITY = 4
 
+# Include uncertainty regarding AV demand true/false
+# If uncertainty is incorporated, ASC_AVPT will be overridden
+UNCERTAIN = True
+
 # ASC and the nickname of the run
+# If uncertainty is incorporated (UNCERTAIN = True), this will have no impact on simulation
 ASC_AVPT = -4.00
 ASC_NAME = "AVPT" + str(ASC_AVPT)
 
@@ -26,7 +31,7 @@ INI_WAIT = 300
 INI_DETOUR = 1.00
 
 # number of iteration steps
-ITER_STEPS = 3
+ITER_STEPS = 10
 
 # warm-up time, study time and cool-down time of the simulation (in seconds)
 T_WARM_UP = 60*30
@@ -39,6 +44,7 @@ T_TOTAL = (T_WARM_UP + T_STUDY + T_COOL_DOWN)
 # sar = simple anticipatory rebalancing, orp = optimal rebalancing problem, dqn = deep Q network
 MET_ASSIGN = "ins"
 MET_REBL = "orp"
+MET_REOPT = 'no'
 
 # intervals for vehicle-request assignment and rebalancing
 INT_ASSIGN = 30

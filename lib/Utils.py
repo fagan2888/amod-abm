@@ -9,6 +9,7 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import matplotlib.image as mpimg
+import random
 
 from lib.OsrmEngine import *
 from lib.Agents import *
@@ -16,9 +17,9 @@ from lib.Demand import *
 from lib.Constants import *
 from lib.ModeChoice import *
 
-def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, wait_time_adj, detour_factor):
+def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, beta_avpt_car_tt, wait_time_adj, detour_factor):
 	# iteration
-	demand_matrix, demand_volume = set_avpt_demand(step, demand_matrix, asc_avpt, wait_time_adj, detour_factor)
+	demand_matrix, demand_volume = set_avpt_demand(step, demand_matrix, asc_avpt, beta_avpt_car_tt, wait_time_adj, detour_factor)
 	# frames record the states of the AMoD model for animation purpose
 	frames = []
 	# initialize the AMoD model
@@ -45,7 +46,7 @@ def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt
 
 
 # print and save results
-def print_results(model, step, runtime):
+def print_results(model, step, runtime, asc_name):
 	count_reqs = 0
 	count_reqs_ond = 0
 	count_reqs_adv = 0
@@ -165,10 +166,10 @@ def print_results(model, step, runtime):
 	# write and save the result analysis
 	with open('output/results.csv', 'a', newline='') as f:
 		writer = csv.writer(f)
-		row = [ASC_NAME, step, MET_ASSIGN, MET_REOPT, MET_REBL, T_STUDY, model.V, model.K, model.D,
+		row = [asc_name, step, MET_ASSIGN, MET_REBL, T_STUDY, model.V, model.K, model.D,
 		 service_rate, count_served, count_reqs, service_rate_ond, count_served_ond, count_reqs_ond, service_rate_adv, count_served_adv, count_reqs_adv,
 		 wait_time_ond, wait_time_adv, in_veh_time, detour_factor, veh_service_dist, veh_service_time, veh_service_time_percent, 
-		 veh_rebl_dist, veh_rebl_time, veh_rebl_time_percent, veh_load_by_dist, veh_load_by_time, None]
+		 veh_pickup_dist, veh_pickup_time, veh_pickup_time_percent, veh_rebl_dist, veh_rebl_time, veh_rebl_time_percent, veh_load_by_dist, veh_load_by_time, cost, benefit]
 		writer.writerow(row)
 
 	# # write and save data of all requests
@@ -282,3 +283,18 @@ def anim(frames):
 		routes3.append( plt.plot([], [], linestyle=':', color=color, alpha=0.4)[0] )
 	anime = animation.FuncAnimation(fig, animate, init_func=init, frames=len(frames), interval=100)
 	return anime
+
+def generate_uncertainty(seed=None):
+	if seed is None:
+		seed = random.randint(1,99999999)
+	random.seed(seed)
+	uncertain_params = dict()
+	uncertain_params['seed'] = seed
+
+	asc_avpt = random.uniform(-5,-3.5)
+	uncertain_params['ASC_AVPT'] = asc_avpt
+
+	beta_avpt_car_tt = -0.37
+	uncertain_params['BETA_AVPT_CAR_TT'] = beta_avpt_car_tt
+
+	return uncertain_params
