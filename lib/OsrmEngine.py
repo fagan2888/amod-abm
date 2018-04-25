@@ -58,6 +58,22 @@ class OsrmEngine(object):
         if self.check_server():
             self.kill_server()
 
+        # Generate the needed map files using OSRM backend if running in Singularity environment
+        if self.use_singularity:
+            map_directory = os.path.dirname(self.map_loc)
+            map_basename = os.path.basename(self.map_loc).split('.')[0]
+
+            from spython.main import Client
+            Client.execute(self.simg_loc, ['osrm-extract','-p','/opt/car.lua',self.map_loc])
+
+            self.osrm_map = os.path.join(map_directory, (map_basename + '.osrm'))
+            if not os.path.isfile(self.osrm_map):
+                raise Exception("%s failed to create during osrm-extract" % self.osrm_map)
+            
+            Client.execute(self.simg_loc, ['osrm-partition', self.osrm_map])
+            Client.execute(self.simg_loc, ['osrm-customize', self.osrm_map])
+            Client.execute(self.simg_loc, ['osrm-contract', self.osrm_map])
+
     # kill any routing server currently running before starting something new
     def kill_server(self):
         if self.use_singularity:
@@ -82,29 +98,16 @@ class OsrmEngine(object):
     
     # start the routing server
     def start_server(self):
-        if self.use_singularity: # If we are running on MGHPCC or another environment with a singularity image of osrm-backend
-            map_directory = os.path.dirname(self.map_loc)
-            map_basename = os.path.basename(self.map_loc).split('.')[0]
-
-            from spython.main import Client
-            Client.execute(self.simg_loc, ['osrm-extract','-p','/opt/car.lua',self.map_loc])
-
-            osrm_map = os.path.join(map_directory, (map_basename + '.osrm'))
-            if not os.path.isfile(osrm_map):
-                raise Exception("%s failed to create during osrm-extract" % osrm_map)
-            
-            Client.execute(self.simg_loc, ['osrm-partition', osrm_map])
-            Client.execute(self.simg_loc, ['osrm-customize', osrm_map])
-            Client.execute(self.simg_loc, ['osrm-contract', osrm_map])
+        if self.use_singularity: # Run a dedicated thread for the singularity backend since we cannot Popen
 
             import multiprocessing
 
             def run_simg_server(simg_loc, osrm_map):
-                Client.execute(simg_loc, ['osrm-routed','--algorithm','mld','-p',str(self.gport),osrm_map])
+                Client.execute(simg_loc, ['osrm-routed','--algorithm','mld','-p',str(self.gport), osrm_map])
 
             print('About to start server.')
             server_process = multiprocessing.Process(
-                name='server', target=run_simg_server, args=(self.simg_loc, osrm_map))
+                name='server', target=run_simg_server, args=(self.simg_loc, self.osrm_map))
 
             print('Starting server....')
             server_process.start()
