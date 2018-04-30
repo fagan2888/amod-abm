@@ -77,7 +77,13 @@ class OsrmEngine(object):
     # kill any routing server currently running before starting something new
     def kill_server(self):
         if self.use_singularity:
-            self.process.terminate()
+            print("Attempting to kill process %s" % self.process)
+            counter = 0
+            while self.process.is_alive() and counter<10:
+                self.process.terminate()
+                time.sleep(1)
+                counter += 1
+            print("Process is alive: %s" % self.process.is_alive())
         elif os.name == 'nt':
             # os.kill(self.pid, 1) # Kill process on windows
             os.system("taskkill /f /im osrm-routed.exe") # Kill process on windows
