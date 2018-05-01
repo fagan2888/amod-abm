@@ -141,7 +141,7 @@ class OsrmEngine(object):
             # start server
             p = Popen([self.exe_loc, '-p', str(self.gport), self.map_loc], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             self.pid = p.pid
-            time.sleep(5)
+            time.sleep(2)
             if requests.get("http://%s:%d" % (self.ghost, self.gport)).status_code == 400:
                 print( "The routing server \"http://%s:%d\" starts running" % (self.ghost, self.gport) )
             else:

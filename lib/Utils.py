@@ -15,7 +15,7 @@ from lib.ModeChoice import *
 
 def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, wait_time_adj, detour_factor):
 	# iteration
-	demand_matrix, demand_volume = set_avpt_demand(step, demand_matrix, asc_avpt, wait_time_adj, detour_factor)
+	demand_matrix, demand_volume, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob = set_avpt_demand(step, demand_matrix, asc_avpt, wait_time_adj, detour_factor)
 	# frames record the states of the AMoD model for animation purpose
 	frames = []
 	# initialize the AMoD model
@@ -42,11 +42,12 @@ def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt
 		anime.save('output/anim.mp4', dpi=300, fps=None, extra_args=['-vcodec', 'libx264'])
 		plt.show()
 
-	return model, step, runtime
+	return model, step, runtime, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob
 
 
 # print and save results
-def print_results(model, step, runtime):
+def print_results(model, step, runtime, fare, logsum_w_AVPT, logsum_wout_AVPT,fleet_size,fare_multiplier, df_diffprob):
+
 	count_reqs = 0
 	count_reqs_ond = 0
 	count_reqs_adv = 0
@@ -60,6 +61,14 @@ def print_results(model, step, runtime):
 	in_veh_time = 0.0
 	detour_factor = 0.0
 	benefit = 0.0
+
+	df_OD_LOS = pd.DataFrame(pd.np.empty((1057, 6)) * pd.np.nan,columns=['m_id', 'summed_wait_time', 'summed_detour_factor', 'number_of_occurances','wait_time', 'detour_factor'])
+	df_OD_LOS['m_id'] = df_OD_LOS.index
+	df_OD_LOS['number_of_occurances'] = 0
+	df_OD_LOS['summed_wait_time'] = 0
+	df_OD_LOS['summed_detour_factor'] = 0
+
+	list = []
 
 	# analyze requests whose earliest pickup time is within the period of study
 	for req in model.reqs:
@@ -76,7 +85,48 @@ def print_results(model, step, runtime):
 				wait_time_adv += 0 if req.OnD else (req.Tp - req.Cep)
 				in_veh_time += (req.Td - req.Tp)
 				detour_factor += req.D
-				benefit += (PRICE_BASE + PRICE_MIN/60 * req.Ts + PRICE_KM/1000 * req.Ds) * PRICE_DISC
+				# assume transit connection discount is absorbed by transit agency 
+				tempfare = (fare[0] + fare[1]/60 * req.Ts + fare[2]/1000 * req.Ds) * fare[3]
+				if tempfare < fare[5]: 
+					benefit += fare[5]
+				else: 
+					benefit += tempfare
+
+				number_of_occurances = df_OD_LOS.get_value(req.m_id, 'number_of_occurances')
+				list.append([req.m_id,req.olng,req.olat,req.dlng,req.dlat,req.D,(req.Tp-req.Cep),req.Ts,req.Ds])
+
+				if number_of_occurances == 0: # if entries for this OD doesn't exist 
+					# update wt detour factor 
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('wait_time')] = (req.Tp - req.Cep)
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('summed_wait_time')] += (req.Tp - req.Cep)
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('detour_factor')] = req.D
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('summed_detour_factor')] += req.D
+					# add number of occurances
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('number_of_occurances')] += 1
+				else: # if entries for this OD exists 
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('summed_wait_time')] += (req.Tp - req.Cep)
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('summed_detour_factor')] += req.D
+					# add number of occurances
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('number_of_occurances')] += 1				
+					#update wt detour factor 
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('wait_time')] = df_OD_LOS.get_value(req.m_id, 'summed_wait_time')/df_OD_LOS.get_value(req.m_id, 'number_of_occurances')
+					df_OD_LOS.iloc[req.m_id, df_OD_LOS.columns.get_loc('detour_factor')] = df_OD_LOS.get_value(req.m_id, 'summed_detour_factor')/df_OD_LOS.get_value(req.m_id, 'number_of_occurances')
+
+	df_req = pd.DataFrame(list,columns=['m_id','origin_lng','origin_lat','destination_lng','destination_lat','detour', 'wait time',"req.Ts_seconds","re.Ds_m"])
+	df_req = df_req.merge(df_diffprob, on=['m_id'], how='left')
+
+	ridershipchange_car = df_req['differenceinprob_car'].sum()
+	ridershipchange_walk = df_req['differenceinprob_walk'].sum()
+	ridershipchange_bike = df_req['differenceinprob_bike'].sum()
+	ridershipchange_taxi = df_req['differenceinprob_taxi'].sum()
+	ridershipchange_bus = df_req['differenceinprob_bus'].sum()
+	ridershipchange_rail = df_req['differenceinprob_rail'].sum()
+	ridershipchange_intermodal = df_req['differenceinprob_intermodal'].sum()
+
+	#match m_id to mode choice results id 
+	#record the delta prob beside each M_ID 
+	#expantion factor no because we're counting trips served not using LTDS to expand population simulated 
+
 	if not count_served == 0:
 		in_veh_time /= count_served
 		detour_factor /= count_served
@@ -85,6 +135,13 @@ def print_results(model, step, runtime):
 		wait_time_ond /= count_served_ond
 	if not count_served_adv == 0:	
 		wait_time_adv /= count_served_adv
+
+	#for all value in dictionary with out a 0 number of entry then set as wait_time and detour_factor
+	df_OD_LOS['wait_time'].replace(np.nan,wait_time,inplace=True)
+	df_OD_LOS['detour_factor'].replace(np.nan,detour_factor,inplace=True)
+
+	#create copy to ensure original is not affected 
+	df_OD_LOS_COPY = df_OD_LOS.copy(deep=True)
 
 	# service rate
 	service_rate = 0.0
@@ -119,7 +176,7 @@ def print_results(model, step, runtime):
 		if not veh.Ds + veh.Dp + veh.Dr == 0:
 			veh_load_by_dist += veh.Ld / (veh.Ds + veh.Dp + veh.Dr)
 		veh_load_by_time += veh.Lt / T_STUDY
-		cost += COST_BASE + COST_MIN/60 * T_STUDY + COST_KM/1000 * (veh.Ds + veh.Dp + veh.Dr)
+		cost += COST_BASE + COST_MIN * T_STUDY/60 + COST_KM/1000 * (veh.Ds + veh.Dp + veh.Dr)
 	veh_service_dist /= model.V
 	veh_service_time /= model.V
 	veh_service_time_percent = 100.0 * veh_service_time / T_STUDY
@@ -131,6 +188,9 @@ def print_results(model, step, runtime):
 	veh_rebl_time_percent = 100.0 * veh_rebl_time / T_STUDY
 	veh_load_by_dist /= model.V
 	veh_load_by_time /= model.V
+
+	overall_logsum = (logsum_w_AVPT - logsum_wout_AVPT) / 0.144 * 10
+
 
 	print("*"*80)
 	print("scenario: %s, step: %d" % (ASC_NAME, step))
@@ -162,15 +222,22 @@ def print_results(model, step, runtime):
 	print("  - cost-benefit analysis:")
 	print("    + cost: %.2f, benefit: %.2f, profit: %.2f" % (cost, benefit, benefit-cost))
 	print("*"*80)
-
+	
+	print("got to save results")	
 	# write and save the result analysis
-	with open('output/results.csv', 'a', newline='') as f:
+	filename1= "output/results_faremultiplier" + str(fare_multiplier) + "_fleetsize_" + str(fleet_size) + ".csv"
+	with open(filename1, 'a', newline='') as f:
 		writer = csv.writer(f)
-		row = [ASC_NAME, step, MET_ASSIGN, MET_REOPT, MET_REBL, T_STUDY, model.V, model.K, model.D,
+		row = [ASC_NAME, step, MET_ASSIGN, MET_REBL, T_STUDY, model.V, model.K, model.D,
 		 service_rate, count_served, count_reqs, service_rate_ond, count_served_ond, count_reqs_ond, service_rate_adv, count_served_adv, count_reqs_adv,
-		 wait_time_ond, wait_time_adv, in_veh_time, detour_factor, veh_service_dist, veh_service_time, veh_service_time_percent, 
-		 veh_rebl_dist, veh_rebl_time, veh_rebl_time_percent, veh_load_by_dist, veh_load_by_time, None]
+		 wait_time, wait_time_adj, wait_time_ond, wait_time_adv, in_veh_time, detour_factor, veh_service_dist, veh_service_time, veh_service_time_percent,
+		 veh_pickup_dist, veh_pickup_time, veh_pickup_time_percent, 
+		 veh_rebl_dist, veh_rebl_time, veh_rebl_time_percent, veh_load_by_dist, veh_load_by_time, 
+		 cost, benefit, logsum_w_AVPT, logsum_wout_AVPT, overall_logsum,
+		 ridershipchange_car,ridershipchange_walk,ridershipchange_bike,ridershipchange_taxi,ridershipchange_bus,ridershipchange_rail,ridershipchange_intermodal,
+		 None]
 		writer.writerow(row)
+		print("end of save the results- the service rate is: ", service_rate)
 
 	# # write and save data of all requests
 	# f = open('output/requests.csv', 'w')
@@ -183,7 +250,7 @@ def print_results(model, step, runtime):
 	# 		writer.writerow(row)
 	# f.close()
 
-	return wait_time_adj, detour_factor
+	return wait_time_adj, detour_factor, df_OD_LOS_COPY
 
 # animation
 def anim(frames):
