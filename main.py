@@ -41,10 +41,13 @@ if __name__ == "__main__":
 	if args.iteration and os.name != 'nt':
 		map_destination = os.path.join(os.path.dirname(map_loc),
 									   'osrm-maps-{}'.format(args.iteration))
-		if not os.path.exists():
-			os.path.makedirs(map_destination)
+		if not os.path.exists(map_destination):
+			os.makedirs(map_destination)
 		shutil.copy2(map_loc, map_destination)
 		map_loc = os.path.join(map_destination, os.path.basename(map_loc))
+
+	print(map_destination)
+	print(map_loc)
 
 	results_filename = 'output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
