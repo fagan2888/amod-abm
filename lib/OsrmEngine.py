@@ -30,6 +30,7 @@ class OsrmEngine(object):
                  map_loc,
                  use_singularity=False,
                  simg_loc=None,
+                 map_dest=None,
                  ghost = hostport,
                  gport = 5000,
                  cst_speed = CST_SPEED):
@@ -60,7 +61,8 @@ class OsrmEngine(object):
 
         # Generate the needed map files using OSRM backend if running in Singularity environment
         if self.use_singularity:
-            map_directory = os.path.dirname(self.map_loc)
+            # Use the specified map destination if there is any, otherwise just use the same dir as the base map
+            map_directory = map_dest or os.path.dirname(self.map_loc)
             map_basename = os.path.basename(self.map_loc).split('.')[0]
 
             from spython.main import Client

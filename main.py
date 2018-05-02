@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import time
 
@@ -33,6 +34,14 @@ if __name__ == "__main__":
 
 	print(fleet_size_array)
 
+	map_destination = None
+	# Sets separate maps directory for osrm to write processed maps to.
+	# THIS WILL NOT WORK ON WINDOWS
+	if args.iteration and os.name != 'nt':
+		map_destination = os.path.join(os.path.dirname(map_loc),
+									   'osrm-maps-{}'.format(args.iteration))
+	print(map_destination)
+
 	results_filename = 'output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
 		'-multi'+str(round(args.multiplier*100.)) if args.multiplier else '',
@@ -50,7 +59,7 @@ if __name__ == "__main__":
 		#  	   "veh_pickup_time", "veh_pickup_time_percent", "veh_rebl_dist", "veh_rebl_time",
 		#  	   "veh_rebl_time_percent", "veh_load_by_dist", "veh_load_by_time", "cost", "benefit", None]
 		row = ["ASC", "step", "ASSIGN", "REBL", "T_STUDY", "fleet_size", "capacity", "volume", "service_rate",
-			   "count_served", "count_reqs", "service_rate_ond", "count_served_ond", "count_reqs_ond",
+			   "count_served", "count_reqs", "service_rate_ond", "count_served_ond", "count_reqs_ond", 
 			   "service_rate_adv", "count_served_adv", "count_reqs_adv", "wait_time", "wait_time_adj",
 			   "wait_time_ond", "wait_time_adv", "in_veh_time", "detour_factor", "veh_service_dist",
 			   "veh_service_time", "veh_service_time_percent", "veh_pickup_dist", "veh_pickup_time",
@@ -74,7 +83,8 @@ if __name__ == "__main__":
 
 	# if road network is enabled, initialize the routing server
 	# otherwise, use Euclidean distance
-	osrm = OsrmEngine(exe_loc, map_loc, use_singularity=use_singularity, simg_loc=simg_loc, gport=osrm_port)
+	osrm = OsrmEngine(exe_loc, map_loc, use_singularity=use_singularity, simg_loc=simg_loc,
+					  map_dest=map_destination, gport=osrm_port)
 	osrm.start_server()
 	osrm.kill_server()
 	osrm.start_server()
