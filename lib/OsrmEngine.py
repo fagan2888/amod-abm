@@ -107,6 +107,7 @@ class OsrmEngine(object):
         if self.use_singularity: # Run a dedicated thread for the singularity backend since we cannot Popen
 
             import multiprocessing
+            from spython.main import Client
 
             def run_simg_server(simg_loc, osrm_map):
                 Client.execute(simg_loc, ['osrm-routed','--algorithm','mld','-p',str(self.gport), osrm_map])
