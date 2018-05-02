@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import sys
 import time
 
@@ -40,7 +41,10 @@ if __name__ == "__main__":
 	if args.iteration and os.name != 'nt':
 		map_destination = os.path.join(os.path.dirname(map_loc),
 									   'osrm-maps-{}'.format(args.iteration))
-	print(map_destination)
+		if not os.path.exists():
+			os.path.makedirs(map_destination)
+		shutil.copy2(map_loc, map_destination)
+		map_loc = os.path.join(map_destination, os.path.basename(map_loc))
 
 	results_filename = 'output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
@@ -83,8 +87,7 @@ if __name__ == "__main__":
 
 	# if road network is enabled, initialize the routing server
 	# otherwise, use Euclidean distance
-	osrm = OsrmEngine(exe_loc, map_loc, use_singularity=use_singularity, simg_loc=simg_loc,
-					  map_dest=map_destination, gport=osrm_port)
+	osrm = OsrmEngine(exe_loc, map_loc, use_singularity=use_singularity, simg_loc=simg_loc, gport=osrm_port)
 	osrm.start_server()
 	osrm.kill_server()
 	osrm.start_server()
