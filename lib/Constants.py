@@ -4,12 +4,22 @@ constants are found here
 
 from lib.Demand import *
 
+
+#Fare
+price_base = 0.831 # dollars/ per trip 
+price_unit_time = 0.111 # dollars/min
+price_unit_distance = 0.547 # dollars/km 
+sharing_discount = 0.75 # 25% discount 
+transit_connect_discount = 1.33 # dollars
+min_cost_avpt = 1.73 # dollars 
+FARE = [price_base, price_unit_time, price_unit_distance, sharing_discount, transit_connect_discount, min_cost_avpt]
+
 # fleet size and vehicle capacity
-FLEET_SIZE = [50]
+FLEET_SIZE= [200]
 VEH_CAPACITY = 4
 
 # ASC and the nickname of the run
-ASC_AVPT = -4.00
+ASC_AVPT = -3.50
 ASC_NAME = "AVPT" + str(ASC_AVPT)
 
 # cost-benefit analysis
@@ -26,7 +36,7 @@ INI_WAIT = 300
 INI_DETOUR = 1.00
 
 # number of iteration steps
-ITER_STEPS = 3
+ITER_STEPS = 10
 
 # warm-up time, study time and cool-down time of the simulation (in seconds)
 T_WARM_UP = 60*30

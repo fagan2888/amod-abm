@@ -32,8 +32,7 @@ if __name__ == "__main__":
 		fleet_size_array = [int(x) for x in args.fleet.split(',')]
 	else:
 		fleet_size_array = FLEET_SIZE
-
-	print(fleet_size_array)
+	fare_multiplier = args.multiplier or 1.0
 
 	map_destination = None
 	# Sets separate maps directory for osrm to write processed maps to.
@@ -41,17 +40,19 @@ if __name__ == "__main__":
 	if args.iteration and os.name != 'nt':
 		map_destination = os.path.join(os.path.dirname(map_loc),
 									   'osrm-maps-{}'.format(args.iteration))
-		if not os.path.exists():
-			os.path.makedirs(map_destination)
+		if not os.path.exists(map_destination):
+			os.makedirs(map_destination)
 		shutil.copy2(map_loc, map_destination)
 		map_loc = os.path.join(map_destination, os.path.basename(map_loc))
+	print('Destination {} exists: {}'.format(map_destination, os.path.exists(map_destination)))
+	print('Map file {} exists: {}'.format(map_loc, os.path.exists(map_loc)))
 
-	results_filename = 'output/results{}{}{}.csv'.format(
+	results_filename = './output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
 		'-multi'+str(round(args.multiplier*100.)) if args.multiplier else '',
 		'-iter'+str(args.iteration) if args.iteration else '')
 
-	print(results_filename)
+	print('Writing results to {}'.format(results_filename))
 
 	with open(results_filename, 'a') as results_file:
 		writer = csv.writer(results_file)
