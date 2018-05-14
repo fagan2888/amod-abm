@@ -56,7 +56,7 @@ def print_results(model, step, runtime, fare, logsum_w_AVPT, logsum_wout_AVPT,fl
 	count_served_adv = 0
 	wait_time = 0.0
 	wait_time_adj = 0.0
-	wait_time_ond = 0.0
+	wait_time_ond = 0.0	
 	wait_time_adv = 0.0
 	in_veh_time = 0.0
 	detour_factor = 0.0

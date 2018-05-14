@@ -446,8 +446,10 @@ class Req(object):
         Tp: pickup time
         Td: dropoff time
         DF: detour factor
+        m_id: 
+
     """
-    def __init__(self, osrm, id, Tr, olng=0.115662, olat=51.374282, dlng=0.089282, dlat=51.350675, OnD=True):
+    def __init__(self, osrm, id, Tr, olng=0.115662, olat=51.374282, dlng=0.089282, dlat=51.350675, OnD=True, m_id=None):
         self.id = id
         self.Tr = Tr
         self.olng = olng
@@ -465,7 +467,8 @@ class Req(object):
         self.Tp = -1.0
         self.Td = -1.0
         self.DF = 0.0
-    
+        self.m_id = m_id
+
     # return origin
     def get_origin(self):
         return (self.olng, self.olat)
@@ -531,13 +534,13 @@ class Model(object):
     def generate_request(self, osrm):
         dt = 3600.0/self.D * self.rs1.exponential()
         rand = self.rs1.rand()
-        for m in self.M:
+        for mid, m in enumerate(self.M):
             if m[5] > rand:
                 OnD = False if m[1] < 51.35 and self.rs1.rand() < 0.5 else True
                 req = Req(osrm, 
                           0 if self.N == 0 else self.reqs[-1].id+1,
                           dt if self.N == 0 else self.reqs[-1].Tr+dt,
-                          m[0], m[1], m[2], m[3], OnD=OnD)
+                          m[0], m[1], m[2], m[3], OnD=OnD, m_id=mid) # move to last column for ttid in demand 
                 break
         return req
     
@@ -564,7 +567,14 @@ class Model(object):
                     self.reqs[rid].Tp = t
                 elif pod == -1:
                     self.reqs[rid].Td = t
+                    # print("self.reqs[rid].id ", self.reqs[rid].id)
+                    # print("olng ,", self.reqs[rid].olng)
+                    # print("olat ,", self.reqs[rid].olat)
+                    # print("dlng ,", self.reqs[rid].dlng)
+                    # print("dlat ,", self.reqs[rid].dlat)
+                    # print("Ts ,", self.reqs[rid].Ts)
                     self.reqs[rid].D = (self.reqs[rid].Td - self.reqs[rid].Tp)/self.reqs[rid].Ts
+                    # print("self.reqs[rid].id ", self.reqs[rid].id)
         self.generate_requests_to_time(osrm, T)
         print(self)
         if np.isclose(T % INT_ASSIGN, 0):
@@ -755,7 +765,15 @@ class Model(object):
                 s[i][j] += 1
                 lamda = d[i][j] * INT_REBL/3600
                 k = int(s[i][j])
+                '''
+                print(k)
+                print(lamda)
+                print(b[i][j])
+                '''
                 b[i][j] -= np.exp(-lamda) * (lamda**k) / np.math.factorial(k)
+                '''
+                print(b[i][j])
+                '''
 
     # get the state of a vehicle
     # a state is defined as the predicted demand, the number of vehicles and their locations, occupancy etc around a vehicle

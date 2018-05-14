@@ -34,18 +34,19 @@ if __name__ == "__main__":
 		fleet_size_array = FLEET_SIZE
 	fare_multiplier = args.multiplier or 1.0
 
-	map_destination = None
-	# Sets separate maps directory for osrm to write processed maps to.
-	# THIS WILL NOT WORK ON WINDOWS
-	if args.iteration and os.name != 'nt':
-		map_destination = os.path.join(os.path.dirname(map_loc),
-									   'osrm-maps-{}'.format(args.iteration))
-		if not os.path.exists(map_destination):
-			os.makedirs(map_destination)
-		shutil.copy2(map_loc, map_destination)
-		map_loc = os.path.join(map_destination, os.path.basename(map_loc))
-	print('Destination {} exists: {}'.format(map_destination, os.path.exists(map_destination)))
-	print('Map file {} exists: {}'.format(map_loc, os.path.exists(map_loc)))
+	if os.name != 'nt':
+		map_destination = None
+		# Sets separate maps directory for osrm to write processed maps to.
+		# THIS WILL NOT WORK ON WINDOWS
+		if args.iteration:
+			map_destination = os.path.join(os.path.dirname(map_loc),
+										   'osrm-maps-{}'.format(args.iteration))
+			if not os.path.exists(map_destination):
+				os.makedirs(map_destination)
+			shutil.copy2(map_loc, map_destination)
+			map_loc = os.path.join(map_destination, os.path.basename(map_loc))
+		print('Destination {} exists: {}'.format(map_destination, os.path.exists(map_destination)))
+		print('Map file {} exists: {}'.format(map_loc, os.path.exists(map_loc)))
 
 	results_filename = './output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
