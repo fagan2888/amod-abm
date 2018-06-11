@@ -3,7 +3,37 @@ constants are found here
 """
 
 from lib.Demand import *
+from lib.ODDistances import od_distances as OD_DIST_DICT
+from lib.ODDurations import od_durations as OD_DRTN_DICT
 
+# List of tuples of two random seeds for use in the Model
+SEEDS = [(750647, 605886),
+		 (989792, 939889),
+		 (97990, 451740),
+		 (174830, 844466),
+		 (889073, 609353),
+		 (393230, 61254),
+		 (507793, 791264),
+		 (995524, 156179),
+		 (503345, 989240),
+		 (82059, 600134),
+		 (628566, 635310),
+		 (550825, 342710),
+		 (478102, 718818),
+		 (737520, 954525),
+		 (197916, 748653),
+		 (426615, 270593),
+		 (31274, 936874),
+		 (4077, 648826),
+		 (426811, 717490),
+		 (603262, 536182),
+		 (266333, 859300),
+		 (17388, 605667),
+		 (413539, 779558),
+		 (408962, 94663),
+		 (229152, 396390),
+		 (588632, 193445),
+		 (246887, 574366),]
 
 #Fare
 price_base = 0.831 # dollars/ per trip 
@@ -15,11 +45,11 @@ min_cost_avpt = 1.73 # dollars
 FARE = [price_base, price_unit_time, price_unit_distance, sharing_discount, transit_connect_discount, min_cost_avpt]
 
 # fleet size and vehicle capacity
-FLEET_SIZE= [200]
+FLEET_SIZE= [150]
 VEH_CAPACITY = 4
 
 # ASC and the nickname of the run
-ASC_AVPT = -3.50
+ASC_AVPT = -3.75
 ASC_NAME = "AVPT" + str(ASC_AVPT)
 
 # cost-benefit analysis
@@ -36,7 +66,12 @@ INI_WAIT = 300
 INI_DETOUR = 1.00
 
 # number of iteration steps
-ITER_STEPS = 10
+ITER_STEPS = 1
+
+# Number of points to sample
+RAND_ITERS = 20
+ASC_DISTS = ['car']*4 + ['rail']*5 + ['taxi']
+RANDOM_SEED = None
 
 # warm-up time, study time and cool-down time of the simulation (in seconds)
 T_WARM_UP = 60*30
@@ -49,23 +84,33 @@ T_TOTAL = (T_WARM_UP + T_STUDY + T_COOL_DOWN)
 # sar = simple anticipatory rebalancing, orp = optimal rebalancing problem, dqn = deep Q network
 MET_ASSIGN = "ins"
 MET_REOPT = "no"
-MET_REBL = "orp"
+MET_REBL = "no"
 
 # intervals for vehicle-request assignment and rebalancing
-INT_ASSIGN = 30
-INT_REBL = 150
+INT_ASSIGN = 15
+INT_REBL = 300
 
 # if road network is enabled, use the routing server; otherwise use Euclidean distance
 IS_ROAD_ENABLED = True
+USE_ENGINE_FOR_INSERTION = False
 # if true, activate the animation
 IS_ANIMATION = False
+
+# Enables diagnostics reporting like the number of links that were found in the lookup table and the number of calls to the routing engine
+DIAGNOSTICS_ENABLED = True
+
+# Specifies the precision of latitude/longitude for finding a given link in the O/D table
+# This is the number of decimal places at which to round
+# See https://en.wikipedia.org/wiki/Decimal_degrees#Precision for insight
+LATLNG_PRECISION = 4
 
 # maximum detour factor and maximum wait time window
 MAX_DETOUR = 1.5
 MAX_WAIT = 60*10
 
 # constant vehicle speed when road network is disabled (in meters/second)
-CST_SPEED = 6
+CST_SPEED = 9 # Based on empirical results from routing engine
+# CST_SPEED = 6
 
 # probability that a request is sent in advance (otherwise, on demand)
 PROB_ADV = 0.0

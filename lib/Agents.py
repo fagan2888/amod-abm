@@ -511,10 +511,16 @@ class Model(object):
         assign: assignment method
         rebl: rebalancing method
     """ 
-    def __init__(self, M, D, V=2, K=4, assign="ins", rebl="no"):
+    def __init__(self, M, D, V=2, K=4, assign="ins", rebl="no", seeds=None):
+        if seeds is None:
+            seed1 = np.random.randint(0,1000000)
+            seed2 = np.random.randint(0,1000000)
+            seeds = (seed1, seed2)
+        else:
+            assert len(seeds) == 2
         # two random generators, the seed of which could be modified for debug use
-        self.rs1 = np.random.RandomState(np.random.randint(0,1000000))
-        self.rs2 = np.random.RandomState(np.random.randint(0,1000000))
+        self.rs1 = np.random.RandomState(seeds[0])
+        self.rs2 = np.random.RandomState(seeds[1])
         self.T = 0.0
         self.M = M
         self.D = D
@@ -567,16 +573,21 @@ class Model(object):
                     self.reqs[rid].Tp = t
                 elif pod == -1:
                     self.reqs[rid].Td = t
-                    # print("self.reqs[rid].id ", self.reqs[rid].id)
-                    # print("olng ,", self.reqs[rid].olng)
-                    # print("olat ,", self.reqs[rid].olat)
-                    # print("dlng ,", self.reqs[rid].dlng)
-                    # print("dlat ,", self.reqs[rid].dlat)
-                    # print("Ts ,", self.reqs[rid].Ts)
-                    self.reqs[rid].D = (self.reqs[rid].Td - self.reqs[rid].Tp)/self.reqs[rid].Ts
-                    # print("self.reqs[rid].id ", self.reqs[rid].id)
+                    try:
+                        self.reqs[rid].D = (self.reqs[rid].Td - self.reqs[rid].Tp)/self.reqs[rid].Ts
+                    except:
+                        print("self.reqs[rid].id ", self.reqs[rid].id)
+                        print("olng ,", self.reqs[rid].olng)
+                        print("olat ,", self.reqs[rid].olat)
+                        print("dlng ,", self.reqs[rid].dlng)
+                        print("dlat ,", self.reqs[rid].dlat)
+                        print("Ts ,", self.reqs[rid].Ts)
+                        print("Td ,", self.reqs[rid].Td)
+                        print("Tp ,", self.reqs[rid].Tp)
+                        assert self.reqs[rid].Td == self.reqs[rid].Tp
+                        self.reqs[rid].D = 0
         self.generate_requests_to_time(osrm, T)
-        print(self)
+        # print(self)
         if np.isclose(T % INT_ASSIGN, 0):
             if self.assign == "ins":
                 self.insertion_heuristics(osrm, T)
@@ -626,10 +637,10 @@ class Model(object):
                     break
         if veh_ != None:
             veh_.build_route(osrm, route_, self.reqs, T)
-            print("    Insertion Heuristics: veh %d is assigned to req %d" % (veh_.id, req.id) )
+            # print("    Insertion Heuristics: veh %d is assigned to req %d" % (veh_.id, req.id) )
             return True
         else:
-            print("    Insertion Heuristics: req %d is rejected!" % (req.id) )
+            # print("    Insertion Heuristics: req %d is rejected!" % (req.id) )
             return False
     
     # test if a route can satisfy all constraints, and if yes, return the cost of the route
@@ -648,7 +659,7 @@ class Model(object):
         n = veh.n
         for (rid, pod, tlng, tlat) in route:
             req_ = self.reqs[rid]
-            dt = osrm.get_duration(lng, lat, tlng, tlat)
+            dt = osrm.get_duration(lng, lat, tlng, tlat, use_engine=USE_ENGINE_FOR_INSERTION)
             t += dt
             if pod == 1:
                 if T + t < req_.Cep:

@@ -45,8 +45,6 @@ if __name__ == "__main__":
 				os.makedirs(map_destination)
 			shutil.copy2(map_loc, map_destination)
 			map_loc = os.path.join(map_destination, os.path.basename(map_loc))
-		print('Destination {} exists: {}'.format(map_destination, os.path.exists(map_destination)))
-		print('Map file {} exists: {}'.format(map_loc, os.path.exists(map_loc)))
 
 	results_filename = './output/results{}{}{}.csv'.format(
 		'-fleet'+str(args.fleet) if args.fleet else '',
@@ -130,6 +128,15 @@ if __name__ == "__main__":
 				osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, fare, df_OD_LOS)
 			# output the simulation results and save data
 			wait_time_adj, detour_factor, df = print_results(
-				model, step, runtime, fare, logsum_w_AVPT, logsum_wout_AVPT,fleet_size, fare_multiplier, df_diffprob)
+				model, step, runtime, fare, logsum_w_AVPT, logsum_wout_AVPT,fleet_size, fare_multiplier, df_diffprob, results_filename)
 			df_OD_LOS = df.copy(deep=True)
 		del df_OD_LOS
+
+	if DIAGNOSTICS_ENABLED:
+		lookup_stats_file = 'output/lookup-stats{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '')
+		osrm.print_lookup_stats(lookup_stats_file)
+
+		key_stats_file = 'output/key-stats{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '')
+		found_keys_file = 'output/found-keys{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '')
+		unfound_keys_file = 'output/unfound-keys{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '')
+		osrm.print_key_stats(key_stats_file, found_keys_file, unfound_keys_file)

@@ -2,6 +2,7 @@
 Open Source Routing Machine (OSRM)
 """
 
+import csv
 import os
 import requests
 import json
@@ -11,7 +12,10 @@ import numpy as np
 from subprocess import Popen, PIPE
 
 from lib.Constants import *
+# from lib.LinkTravelTimes import link_travel_times as LINK_TRAFFIC_DICT
+from lib.LinkTravelTimesWithPrecision import link_travel_times_prec4 as LINK_TRAFFIC_DICT
 from local import hostport, osrm_version
+
 
 class OsrmEngine(object):
     """
@@ -74,6 +78,19 @@ class OsrmEngine(object):
             Client.execute(self.simg_loc, ['osrm-partition', self.osrm_map])
             Client.execute(self.simg_loc, ['osrm-customize', self.osrm_map])
             Client.execute(self.simg_loc, ['osrm-contract', self.osrm_map])
+
+        global DISTANCE_USES_LOOKUP, DURATION_USES_LOOKUP, DISTDRTN_USES_LOOKUP, DISTANCE_USES_ENGINE, DURATION_USES_ENGINE, DISTDRTN_USES_ENGINE, ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS, UNFOUND_KEYS_DICT
+
+        DISTANCE_USES_LOOKUP = 0
+        DURATION_USES_LOOKUP = 0
+        DISTDRTN_USES_LOOKUP = 0
+        DISTANCE_USES_ENGINE = 0
+        DURATION_USES_ENGINE = 0
+        DISTDRTN_USES_ENGINE = 0
+        ROUTING_COULD_LOOKUP = 0
+        ROUTING_USES_ENGINE = 0
+        FOUND_KEYS = set()
+        UNFOUND_KEYS_DICT = dict()
 
     # kill any routing server currently running before starting something new
     def kill_server(self):
@@ -184,17 +201,77 @@ class OsrmEngine(object):
 
     # get the best route from origin to destination 
     def get_routing(self, olng, olat, dlng, dlat):
+        global ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS, UNFOUND_KEYS_DICT
+
+        origin = (float(olng), float(olat))
+        destination = (float(dlng), float(dlat))
+
+        if origin in OD_DIST_DICT and destination in OD_DIST_DICT[origin]:
+            ROUTING_COULD_LOOKUP += 1
+        else:
+            ROUTING_USES_ENGINE += 1
+
         url = self.create_url(olng, olat, dlng, dlat, steps="true", annotations="false")
         (response, code) = self.call_url(url)
         if code:
-            return response['routes'][0]['legs'][0]
+            route = response['routes'][0]['legs'][0]
+
+            # For testing
+            total_congested_tt = 0
+            uncongested_tt = route['duration']
+
+            # Replace the durations from OSRM freeflow travel with Google Maps based congested travel from dictionary
+            for step in route['steps']:
+                start_loc = step['intersections'][0]['location']
+                slng = round(start_loc[0], LATLNG_PRECISION)
+                slat = round(start_loc[1], LATLNG_PRECISION)
+                end_loc = step['intersections'][-1]['location']
+                elng = round(end_loc[0], LATLNG_PRECISION)
+                elat = round(end_loc[1], LATLNG_PRECISION)
+                link_key = (slng, slat, elng, elat)
+                try:
+                    congested_tt = LINK_TRAFFIC_DICT[link_key]
+                    FOUND_KEYS.add(link_key)
+                    step['duration'] = congested_tt
+
+                    # For testing
+                    total_congested_tt += congested_tt
+                except:
+                    congested_tt = step['duration']
+                    total_congested_tt += congested_tt
+                    UNFOUND_KEYS_DICT[link_key] = congested_tt
+
+                assert congested_tt >= step['duration']
+
+            # Change route duration to sum of steps' durations after Google Maps adjustment
+            route['duration'] = sum([step['duration'] for step in route['steps']])
+
+            # Test to make sure this worked correctly
+            assert route['duration'] == total_congested_tt
+
+            # Record influence of congestion on route travel times
+            with open('output/congested-vs-normal-durations.csv', 'a+', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([olat, olng, dlat, dlng, uncongested_tt, total_congested_tt])
+
+            return route
         else:
             return None
     
     # get the distance of the best route from origin to destination
     # if road network is not enabled, return Euclidean distance
-    def get_distance(self, olng, olat, dlng, dlat):
-        if IS_ROAD_ENABLED:
+    def get_distance(self, olng, olat, dlng, dlat, use_engine=True):
+        global DISTANCE_USES_LOOKUP, DISTANCE_USES_ENGINE
+
+        origin = (float(olng), float(olat))
+        destination = (float(dlng), float(dlat))
+        if origin in OD_DIST_DICT and destination in OD_DIST_DICT[origin]:
+            DISTANCE_USES_LOOKUP += 1
+            return OD_DIST_DICT[origin][destination]
+        else:
+            DISTANCE_USES_ENGINE += 1
+
+        if IS_ROAD_ENABLED and use_engine:
             url = self.create_url(olng, olat, dlng, dlat, steps="false", annotations="false")
             (response, code) = self.call_url(url)
             if code:
@@ -206,8 +283,18 @@ class OsrmEngine(object):
     
     # get the duration of the best route from origin to destination
     # if road network is not enabled, return the duration based on Euclidean distance and constant speed   
-    def get_duration(self, olng, olat, dlng, dlat):
-        if IS_ROAD_ENABLED:
+    def get_duration(self, olng, olat, dlng, dlat, use_engine=True):
+        global DURATION_USES_LOOKUP, DURATION_USES_ENGINE
+
+        origin = (float(olng), float(olat))
+        destination = (float(dlng), float(dlat))
+        if origin in OD_DRTN_DICT and destination in OD_DRTN_DICT[origin]:
+            DURATION_USES_LOOKUP += 1
+            return OD_DRTN_DICT[origin][destination]
+        else:
+            DURATION_USES_ENGINE += 1
+
+        if IS_ROAD_ENABLED and use_engine:
             url = self.create_url(olng, olat, dlng, dlat, steps="false", annotations="false")
             (response, code) = self.call_url(url)
             if code:
@@ -215,17 +302,69 @@ class OsrmEngine(object):
             else:
                 return None
         else:
-            return self.get_distance(olng, olat, dlng, dlat) / self.cst_speed
+            return self.get_distance(olng, olat, dlng, dlat, use_engine=use_engine) / self.cst_speed
     
     # get both distance and duration
-    def get_distance_duration(self, olng, olat, dlng, dlat):
-        if IS_ROAD_ENABLED:
+    def get_distance_duration(self, olng, olat, dlng, dlat, use_engine=True):
+        global DISTDRTN_USES_LOOKUP, DISTDRTN_USES_ENGINE
+
+        origin = (float(olng), float(olat))
+        destination = (float(dlng), float(dlat))
+        if origin in OD_DRTN_DICT and destination in OD_DRTN_DICT[origin] and origin in OD_DIST_DICT and destination in OD_DIST_DICT[origin]:
+            DISTDRTN_USES_LOOKUP += 1
+            # distance = OD_DIST_DICT[origin][destination]
+            # duration = OD_DRTN_DICT[origin][destination]
+            # with open('output/distance-duration.csv', 'a+', newline='') as csvfile:
+            #     writer = csv.writer(csvfile)
+            #     writer.writerow([float(distance)/float(duration)])
+            # return (distance, duration)
+            return (OD_DIST_DICT[origin][destination], OD_DRTN_DICT[origin][destination])
+        else:
+            DISTDRTN_USES_ENGINE += 1
+
+        print('get_distance_duration call not using engine')
+        if IS_ROAD_ENABLED and use_engine:
             url = self.create_url(olng, olat, dlng, dlat, steps="false", annotations="false")
             (response, code) = self.call_url(url)
             if code:
+                # distance = response['routes'][0]['distance']
+                # duration = response['routes'][0]['duration']
+
+                # with open('output/distance-duration.csv', 'a+', newline='') as csvfile:
+                #     writer = csv.writer(csvfile)
+                #     writer.writerow([float(distance)/float(duration)])
+
+                # return (distance, duration)
                 return (response['routes'][0]['distance'], response['routes'][0]['duration'])
             else:
                 return None
         else:
             return self.get_distance(olng, olat, dlng, dlat), self.get_duration(olng, olat, dlng, dlat) 
-            
+
+    def print_lookup_stats(self, lookup_stats_file):
+        print('get_distance using lookup table: {}'.format(DISTANCE_USES_LOOKUP), file=open(lookup_stats_file, 'w+'))
+        print('get_duration using lookup table: {}'.format(DURATION_USES_LOOKUP), file=open(lookup_stats_file, 'a+'))
+        print('get_distance_duration using lookup table: {}'.format(DISTDRTN_USES_LOOKUP), file=open(lookup_stats_file, 'a+'))
+        print('get_distance using routing engine: {}'.format(DISTANCE_USES_ENGINE), file=open(lookup_stats_file, 'a+'))
+        print('get_duration using routing engine: {}'.format(DURATION_USES_ENGINE), file=open(lookup_stats_file, 'a+'))
+        print('get_distance_duration using routing engine: {}'.format(DISTDRTN_USES_ENGINE), file=open(lookup_stats_file, 'a+'))
+        print('get_routing that could use lookup table: {}'.format(ROUTING_COULD_LOOKUP), file=open(lookup_stats_file, 'a+'))
+        print('get_routing that can\'t use lookup table: {}'.format(ROUTING_USES_ENGINE), file=open(lookup_stats_file, 'a+'))
+
+    def print_key_stats(self, key_stats_file, found_keys_file=None, unfound_keys_file=None):
+        print('unique links with traffic data used: {}'.format(len(FOUND_KEYS)), file=open(key_stats_file, 'w+'))
+        print('unique links without traffic data used: {}'.format(len(UNFOUND_KEYS_DICT)), file=open(key_stats_file, 'a+'))
+
+        if found_keys_file:
+            with open(found_keys_file, 'a+', newline='') as f:
+                writer = csv.writer(f)
+                for key in FOUND_KEYS:
+                    writer.writerow(list(key))
+
+        if unfound_keys_file:
+            with open(unfound_keys_file, 'a+', newline='') as f:
+                writer = csv.writer(f)
+                for key in UNFOUND_KEYS_DICT.keys():
+                    key_row = list(key)
+                    key_row.append(UNFOUND_KEYS_DICT[key])
+                    writer.writerow(key_row)
