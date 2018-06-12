@@ -66,7 +66,7 @@ INI_WAIT = 300
 INI_DETOUR = 1.00
 
 # number of iteration steps
-ITER_STEPS = 1
+ITER_STEPS = 5
 
 # Number of points to sample
 RAND_ITERS = 20
@@ -102,7 +102,7 @@ DIAGNOSTICS_ENABLED = True
 # Specifies the precision of latitude/longitude for finding a given link in the O/D table
 # This is the number of decimal places at which to round
 # See https://en.wikipedia.org/wiki/Decimal_degrees#Precision for insight
-LATLNG_PRECISION = 4
+LATLNG_PRECISION = 5
 
 # maximum detour factor and maximum wait time window
 MAX_DETOUR = 1.5

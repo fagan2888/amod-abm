@@ -13,7 +13,9 @@ from subprocess import Popen, PIPE
 
 from lib.Constants import *
 # from lib.LinkTravelTimes import link_travel_times as LINK_TRAFFIC_DICT
-from lib.LinkTravelTimesWithPrecision import link_travel_times_prec4 as LINK_TRAFFIC_DICT
+# from lib.LinkTravelTimesPrec4 import link_travel_times as LINK_TRAFFIC_DICT
+from lib.LinkTravelTimesPrec5 import link_travel_times as LINK_TRAFFIC_DICT
+# from lib.LinkTravelTimesWithPrecision import link_travel_times as LINK_TRAFFIC_DICT
 from local import hostport, osrm_version
 
 
