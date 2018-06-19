@@ -2,29 +2,8 @@ import numpy as np
 import pandas as pd 
 import csv
 
-'''modelling variables''' 
-ASC_BIKE    = -5.01
-ASC_BUS = -2.87
-ASC_CAR = -2.35
-ASC_PnK_RIDE = -3.58
-ASC_RAIL    = -3.14
-ASC_TAXI    = -5.81
-B_BIKE_TT    = -1.07
-B_BUS_TT    = -0.37
-B_CAR_NUM = 0.751
-B_CAR_TT = -1.04
-B_COST = -0.144 # pounds 
-B_PnK_RIDE_TT = -0.277
-B_RAIL_TT    = -0.362
-B_TAXI_DIS = 0.439
-B_TAXI_TT    = -1.83
-B_TRANSITNUMTRANSFERS = -0.452
-B_TRANSITWALK_TT = -0.536
-B_WALK_TT    = -1.21
-MU_TRANSIT = 3.23
-BETA_AVPT_CAR_TT = -0.37
-BETA_AVPT_PT_TT = -0.362
-BETA_AVPT_COST = -0.144
+from lib.Constants import INI_WAIT, INI_DETOUR
+from lib.ModeChoiceVars import *
 
 '''distance conversion'''
 km2mile = 1.609344
@@ -154,7 +133,7 @@ def main_CBD(filename, ASC_AVPT, fare, df_OD_LOS):
 	df['rail_utility'] = df['rail_utility'].apply(lambda value: transit_utility_calc(value, MU_TRANSIT))
 	df['intermodal_utility'] = df['intermodal_utility'].apply(lambda value: transit_utility_calc(value, MU_TRANSIT))
 	df['AVPT_utility'] = np.exp(df['AVPT_utility']*MU_TRANSIT)
-	
+
 	df['exp_sum']  = np.exp(1/MU_TRANSIT * np.log(df['bus_utility'] + df['rail_utility'] + df['intermodal_utility'] + df['AVPT_utility'])) \
 		+ df['car_utility'] + df['walk_utility'] + df['bike_utility'] + df['taxi_utility']
 	df['expsum_wout_AVPT'] = df.apply(lambda value: expsum(value, MU_TRANSIT), axis = 1)
@@ -177,13 +156,13 @@ def main_CBD(filename, ASC_AVPT, fare, df_OD_LOS):
 						/df['exp_sum'] * df['intermodal_utility']/df['sum_transit_utility']
 	df['prob_AVPT'] = np.exp(1/MU_TRANSIT * np.log(df['sum_transit_utility'])) \
 						/df['exp_sum'] * df['AVPT_utility']/df['sum_transit_utility']
-	
+
 	df1 = diffinprob(df)
 
-	df['AVPT_choice'] = df['prob_AVPT'] * df['expan_fac/10']    
-	
+	df['AVPT_choice'] = df['prob_AVPT'] * df['expan_fac/10']
+
 	df['differenceinprob_car'] = (df['prob_car'] - df['prob_car_woutAVPT'])/df['prob_AVPT']
-	df['differenceinprob_walk'] = (df['prob_walk'] - df['prob_walk_woutAVPT'])/df['prob_AVPT'] 
+	df['differenceinprob_walk'] = (df['prob_walk'] - df['prob_walk_woutAVPT'])/df['prob_AVPT']
 	df['differenceinprob_bike'] = (df['prob_bike'] - df['prob_bike_woutAVPT'])/df['prob_AVPT']
 	df['differenceinprob_taxi'] = (df['prob_taxi'] - df['prob_taxi_woutAVPT'])/df['prob_AVPT']
 	df['differenceinprob_bus'] = (df['prob_bus'] - df['prob_bus_woutAVPT'])/df['prob_AVPT']
@@ -224,7 +203,6 @@ def main_intrazonal(filename, ASC_AVPT, fare, df_OD_LOS):
 	df['temp'] = (fare[0] + fare[1] * df['AV_time'] / 60 + fare[2] * df['AV_dist']/1000)*sharing_discount/gbp2usd # divide by 1.33 to make into pounds
 	df['AV+PT_cost'] = df['temp'].apply(lambda value: max(value, min_cost_avpt))
 	'''end of DATA PREP'''
-
 
 	'''define utility equations'''
 	df['car_utility'] = ASC_CAR + B_CAR_TT * df['autotime']/600 + B_CAR_NUM * df['num_cars'] \
@@ -353,3 +331,15 @@ def set_avpt_demand(step, demand_matrix, ASC_AVPT, fare, df_OD_LOS):
 	df_diffprob = df.copy(deep=True)
 	
 	return demand_matrix, total_volume, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob
+
+def initialize_OD_LOS():
+	#initalize decision variables as 0 after each loop completion  
+	df_OD_LOS = pd.DataFrame(pd.np.empty((1057, 6)) * pd.np.nan,columns=['m_id', 'summed_wait_time', 'summed_detour_factor', 'number_of_occurances','wait_time', 'detour_factor'])
+	df_OD_LOS['m_id'] = df_OD_LOS.index
+	df_OD_LOS['number_of_occurances'] = 0
+	df_OD_LOS['summed_wait_time'] = 0
+	df_OD_LOS['summed_detour_factor'] = 0
+	df_OD_LOS['wait_time'] = int(INI_WAIT)
+	df_OD_LOS['detour_factor'] = int(INI_DETOUR)
+
+	return df_OD_LOS

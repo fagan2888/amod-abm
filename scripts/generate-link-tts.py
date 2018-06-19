@@ -1,14 +1,15 @@
 import csv
 
 sourcefile = '../lib/ModeData/trips_attributes_nate.csv'
-outfile = '../lib/LinkTravelTimesPrec5.py'
 
-precision = 5
+precision = 4
 method = 'min'
+
+outfile = '../lib/LinkTravelTimesPrec{}.py'.format(precision)
 
 link_tt_dict = dict()
 
-print('link_travel_times = {', file=open(outfile, 'a+'))
+print('link_travel_times = {', file=open(outfile, 'w+'))
 with open(sourcefile) as f:
 	reader = csv.reader(f)
 	next(reader)
@@ -27,6 +28,6 @@ with open(sourcefile) as f:
 			link_tt_dict[link] = duration
 
 for link in link_tt_dict.keys():
-	print('{}: {}, '.format(link, duration), file=open(outfile, 'a'))
+	print('{}: {}, '.format(link, link_tt_dict[link]), file=open(outfile, 'a'))
 
 print('}', file=open(outfile, 'a', newline=''))

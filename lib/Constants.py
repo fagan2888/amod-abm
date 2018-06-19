@@ -35,6 +35,9 @@ SEEDS = [(750647, 605886),
 		 (588632, 193445),
 		 (246887, 574366),]
 
+# Use the above list or generate and record random seeds
+USE_SEEDS = False
+
 #Fare
 price_base = 0.831 # dollars/ per trip 
 price_unit_time = 0.111 # dollars/min
@@ -45,11 +48,11 @@ min_cost_avpt = 1.73 # dollars
 FARE = [price_base, price_unit_time, price_unit_distance, sharing_discount, transit_connect_discount, min_cost_avpt]
 
 # fleet size and vehicle capacity
-FLEET_SIZE= [150]
+FLEET_SIZE= [200]
 VEH_CAPACITY = 4
 
 # ASC and the nickname of the run
-ASC_AVPT = -3.75
+ASC_AVPT = -3.5
 ASC_NAME = "AVPT" + str(ASC_AVPT)
 
 # cost-benefit analysis
@@ -62,16 +65,11 @@ PRICE_KM = 0.527
 PRICE_DISC = 0.75
 
 # initial wait time and detour factor when starting the interaction
-INI_WAIT = 300
-INI_DETOUR = 1.00
+INI_WAIT = 400
+INI_DETOUR = 1.25
 
 # number of iteration steps
-ITER_STEPS = 5
-
-# Number of points to sample
-RAND_ITERS = 20
-ASC_DISTS = ['car']*4 + ['rail']*5 + ['taxi']
-RANDOM_SEED = None
+ITER_STEPS = 10
 
 # warm-up time, study time and cool-down time of the simulation (in seconds)
 T_WARM_UP = 60*30
@@ -84,11 +82,11 @@ T_TOTAL = (T_WARM_UP + T_STUDY + T_COOL_DOWN)
 # sar = simple anticipatory rebalancing, orp = optimal rebalancing problem, dqn = deep Q network
 MET_ASSIGN = "ins"
 MET_REOPT = "no"
-MET_REBL = "no"
+MET_REBL = "sar"
 
 # intervals for vehicle-request assignment and rebalancing
-INT_ASSIGN = 15
-INT_REBL = 300
+INT_ASSIGN = 30
+INT_REBL = 150
 
 # if road network is enabled, use the routing server; otherwise use Euclidean distance
 IS_ROAD_ENABLED = True
@@ -98,11 +96,13 @@ IS_ANIMATION = False
 
 # Enables diagnostics reporting like the number of links that were found in the lookup table and the number of calls to the routing engine
 DIAGNOSTICS_ENABLED = True
+# Enables printing of state of simulation every update
+PRINT_PROGRESS = False
 
 # Specifies the precision of latitude/longitude for finding a given link in the O/D table
 # This is the number of decimal places at which to round
 # See https://en.wikipedia.org/wiki/Decimal_degrees#Precision for insight
-LATLNG_PRECISION = 5
+LATLNG_PRECISION = 4
 
 # maximum detour factor and maximum wait time window
 MAX_DETOUR = 1.5

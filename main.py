@@ -94,7 +94,7 @@ if __name__ == "__main__":
 	osrm.kill_server()
 	osrm.start_server()
 
-	for fleet_size in fleet_size_array:
+	for fleet_iter, fleet_size in enumerate(fleet_size_array):
 		veh_capacity = VEH_CAPACITY
 		wait_time_adj = INI_WAIT
 		detour_factor = INI_DETOUR
@@ -121,9 +121,13 @@ if __name__ == "__main__":
 		df_OD_LOS['wait_time'] = int(INI_WAIT)
 		df_OD_LOS['detour_factor'] = int(INI_DETOUR)
 
+		# df_OD_LOS = None
+
 		#iteration
 		for step in range(ITER_STEPS):
 			# run simulation
+			# model, step, runtime, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob = run_simulation(
+				# osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, fare, df_OD_LOS)
 			model, step, runtime, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob = run_simulation(
 				osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, fare, df_OD_LOS)
 			# output the simulation results and save data
@@ -132,11 +136,13 @@ if __name__ == "__main__":
 			df_OD_LOS = df.copy(deep=True)
 		del df_OD_LOS
 
-	if DIAGNOSTICS_ENABLED:
-		lookup_stats_file = 'output/lookup-stats{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '')
-		osrm.print_lookup_stats(lookup_stats_file)
+		if DIAGNOSTICS_ENABLED:
+			key_stats_file = 'output/key-stats{}-{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '', fleet_iter)
+			found_keys_file = 'output/found-keys{}-{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '', fleet_iter)
+			unfound_keys_file = 'output/unfound-keys{}-{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '', fleet_iter)
+			osrm.print_key_stats(key_stats_file, found_keys_file, unfound_keys_file)
 
-		key_stats_file = 'output/key-stats{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '')
-		found_keys_file = 'output/found-keys{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '')
-		unfound_keys_file = 'output/unfound-keys{}.csv'.format('-iter'+str(args.iteration) if args.iteration else '')
-		osrm.print_key_stats(key_stats_file, found_keys_file, unfound_keys_file)
+
+	if DIAGNOSTICS_ENABLED:
+		lookup_stats_file = 'output/lookup-stats{}-{}.txt'.format('-iter'+str(args.iteration) if args.iteration else '', fleet_iter)
+		osrm.print_lookup_stats(lookup_stats_file)

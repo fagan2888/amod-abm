@@ -515,6 +515,7 @@ class Model(object):
         if seeds is None:
             seed1 = np.random.randint(0,1000000)
             seed2 = np.random.randint(0,1000000)
+            print(' - Seed 1 : {}\n - Seed 2 : {}'.format(seed1, seed2), file=open('output/seeds.txt', 'a'))
             seeds = (seed1, seed2)
         else:
             assert len(seeds) == 2
@@ -576,18 +577,10 @@ class Model(object):
                     try:
                         self.reqs[rid].D = (self.reqs[rid].Td - self.reqs[rid].Tp)/self.reqs[rid].Ts
                     except:
-                        print("self.reqs[rid].id ", self.reqs[rid].id)
-                        print("olng ,", self.reqs[rid].olng)
-                        print("olat ,", self.reqs[rid].olat)
-                        print("dlng ,", self.reqs[rid].dlng)
-                        print("dlat ,", self.reqs[rid].dlat)
-                        print("Ts ,", self.reqs[rid].Ts)
-                        print("Td ,", self.reqs[rid].Td)
-                        print("Tp ,", self.reqs[rid].Tp)
                         assert self.reqs[rid].Td == self.reqs[rid].Tp
                         self.reqs[rid].D = 0
         self.generate_requests_to_time(osrm, T)
-        # print(self)
+        if PRINT_PROGRESS: print(self)
         if np.isclose(T % INT_ASSIGN, 0):
             if self.assign == "ins":
                 self.insertion_heuristics(osrm, T)

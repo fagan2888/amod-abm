@@ -13,14 +13,26 @@ from lib.Demand import *
 from lib.Constants import *
 from lib.ModeChoice import *
 
-def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, fare, df_OD_LOS):
+if IS_ANIMATION:
+	import matplotlib.pyplot as plt
+	from matplotlib import animation
+	import matplotlib.image as mpimg
+
+
+def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt, fare, df_OD_LOS=None):
+	# initialize OD level of service matrix if one is not provided as input
+	if df_OD_LOS is None:
+		df_OD_LOS = initialize_OD_LOS()
 	# iteration
 	demand_matrix, demand_volume, logsum_w_AVPT, logsum_wout_AVPT, df_diffprob = set_avpt_demand(step, demand_matrix, asc_avpt, fare, df_OD_LOS)
 	# frames record the states of the AMoD model for animation purpose
 	frames = []
 	# initialize the AMoD model
-	model = Model(demand_matrix, demand_volume, V=fleet_size, K=veh_capacity, assign=MET_ASSIGN, rebl=MET_REBL)
-	model = Model(demand_matrix, demand_volume, V=fleet_size, K=veh_capacity, assign=MET_ASSIGN, rebl=MET_REBL, seeds=SEEDS[step])
+	if not USE_SEEDS:
+		print('Step {} - Fleet size {} ASC-AVPT {}'.format(step, fleet_size, asc_avpt), file=open('output/seeds.txt', 'a+'))
+		model = Model(demand_matrix, demand_volume, V=fleet_size, K=veh_capacity, assign=MET_ASSIGN, rebl=MET_REBL)
+	else:
+		model = Model(demand_matrix, demand_volume, V=fleet_size, K=veh_capacity, assign=MET_ASSIGN, rebl=MET_REBL, seeds=SEEDS[step])
 	# start time
 	stime = time.time()
 	# dispatch the system for T_TOTAL seconds, at the interval of INT_ASSIGN
@@ -35,10 +47,6 @@ def run_simulation(osrm, step, demand_matrix, fleet_size, veh_capacity, asc_avpt
 
 	# generate, show and save the animation of this simulation
 	if IS_ANIMATION:
-		import matplotlib.pyplot as plt
-		from matplotlib import animation
-		import matplotlib.image as mpimg
-
 		anime = anim(frames)
 		anime.save('output/anim.mp4', dpi=300, fps=None, extra_args=['-vcodec', 'libx264'])
 		plt.show()
@@ -201,7 +209,7 @@ def print_results(model, step, runtime, fare, logsum_w_AVPT, logsum_wout_AVPT,fl
 	print("system settings:")
 	print("  - period of study: %d s, with warm-up %d s, cool-down %d s" % (T_STUDY, T_WARM_UP, T_COOL_DOWN))
 	print("  - fleet size: %d; capacity: %d" % (model.V, model.K))
-	print("  - demand valume: %.1f trips/h" % (model.D))
+	print("  - demand volume: %.1f trips/h" % (model.D))
 	print("  - assignment method: %s, interval: %.1f s" % (MET_ASSIGN, INT_ASSIGN))
 	print("  - rebalancing method: %s, interval: %.1f s" % (MET_REBL, INT_REBL))
 	print("simulation results:")
@@ -336,8 +344,8 @@ def anim(frames):
 	routes1 = []
 	routes2 = []
 	routes3 = []
+	random_color = lambda: random.randint(0, 255)
 	for v in reversed(frames[0]):
-		color = "0.50"
 		if v.id == 0:
 			color = "#dc241f"
 		elif v.id == 1:
@@ -348,6 +356,9 @@ def anim(frames):
 			color = "#0098d8"
 		elif v.id == 4:
 			color = "#b26300"
+		else:
+			# generate random color for any other vehicles
+			color = '#%02X%02X%02X' % (random_color(), random_color(), random_color())
 		vehs.append( plt.plot([], [], color=color, marker='o', markersize=4, alpha=0.7)[0] )
 		routes1.append( plt.plot([], [], linestyle='-', color=color, alpha=0.7)[0] )
 		routes2.append( plt.plot([], [], linestyle='--', color=color, alpha=0.7)[0] )

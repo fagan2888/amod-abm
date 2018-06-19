@@ -4,5 +4,5 @@ output/
 .stxxl
 **/__pycache__/**
 *.pyc
-local.py
 lib/ModeData/
+*.*~

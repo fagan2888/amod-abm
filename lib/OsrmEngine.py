@@ -12,10 +12,7 @@ import numpy as np
 from subprocess import Popen, PIPE
 
 from lib.Constants import *
-# from lib.LinkTravelTimes import link_travel_times as LINK_TRAFFIC_DICT
-# from lib.LinkTravelTimesPrec4 import link_travel_times as LINK_TRAFFIC_DICT
-from lib.LinkTravelTimesPrec5 import link_travel_times as LINK_TRAFFIC_DICT
-# from lib.LinkTravelTimesWithPrecision import link_travel_times as LINK_TRAFFIC_DICT
+from lib.LinkTravelTimes import link_travel_times_prec4 as LINK_TRAFFIC_DICT
 from local import hostport, osrm_version
 
 
@@ -81,7 +78,7 @@ class OsrmEngine(object):
             Client.execute(self.simg_loc, ['osrm-customize', self.osrm_map])
             Client.execute(self.simg_loc, ['osrm-contract', self.osrm_map])
 
-        global DISTANCE_USES_LOOKUP, DURATION_USES_LOOKUP, DISTDRTN_USES_LOOKUP, DISTANCE_USES_ENGINE, DURATION_USES_ENGINE, DISTDRTN_USES_ENGINE, ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS, UNFOUND_KEYS_DICT
+        global DISTANCE_USES_LOOKUP, DURATION_USES_LOOKUP, DISTDRTN_USES_LOOKUP, DISTANCE_USES_ENGINE, DURATION_USES_ENGINE, DISTDRTN_USES_ENGINE, ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS_DICT, UNFOUND_KEYS_DICT
 
         DISTANCE_USES_LOOKUP = 0
         DURATION_USES_LOOKUP = 0
@@ -91,7 +88,7 @@ class OsrmEngine(object):
         DISTDRTN_USES_ENGINE = 0
         ROUTING_COULD_LOOKUP = 0
         ROUTING_USES_ENGINE = 0
-        FOUND_KEYS = set()
+        FOUND_KEYS_DICT = dict()
         UNFOUND_KEYS_DICT = dict()
 
     # kill any routing server currently running before starting something new
@@ -203,7 +200,7 @@ class OsrmEngine(object):
 
     # get the best route from origin to destination 
     def get_routing(self, olng, olat, dlng, dlat):
-        global ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS, UNFOUND_KEYS_DICT
+        global ROUTING_COULD_LOOKUP, ROUTING_USES_ENGINE, FOUND_KEYS_DICT, UNFOUND_KEYS_DICT
 
         origin = (float(olng), float(olat))
         destination = (float(dlng), float(dlat))
@@ -220,7 +217,7 @@ class OsrmEngine(object):
 
             # For testing
             total_congested_tt = 0
-            uncongested_tt = route['duration']
+            total_uncongested_tt = route['duration'] # equal to the sum of the step durations
 
             # Replace the durations from OSRM freeflow travel with Google Maps based congested travel from dictionary
             for step in route['steps']:
@@ -231,19 +228,32 @@ class OsrmEngine(object):
                 elng = round(end_loc[0], LATLNG_PRECISION)
                 elat = round(end_loc[1], LATLNG_PRECISION)
                 link_key = (slng, slat, elng, elat)
+
+                uncongested_tt = step['duration']
+
                 try:
                     congested_tt = LINK_TRAFFIC_DICT[link_key]
-                    FOUND_KEYS.add(link_key)
+                    if link_key not in FOUND_KEYS_DICT.keys():
+                        FOUND_KEYS_DICT[link_key] = [step['distance'], 0]
+                    FOUND_KEYS_DICT[link_key][1] += 1
+
+                    # print('Link {} has congested TT: {} but OSRM duration: {}'.format(link_key, congested_tt, step['duration']))
+
                     step['duration'] = congested_tt
 
                     # For testing
                     total_congested_tt += congested_tt
-                except:
-                    congested_tt = step['duration']
+                except KeyError:
+                    congested_tt = uncongested_tt
                     total_congested_tt += congested_tt
-                    UNFOUND_KEYS_DICT[link_key] = congested_tt
+                    if (slng, slat) != (elng, elat):    
+                        if link_key not in UNFOUND_KEYS_DICT.keys():
+                            UNFOUND_KEYS_DICT[link_key] = [step['distance'], 0]
+                        UNFOUND_KEYS_DICT[link_key][1] += 1
 
-                assert congested_tt >= step['duration']
+                # assert congested_tt >= uncongested_tt
+
+            # assert total_congested_tt >= total_uncongested_tt
 
             # Change route duration to sum of steps' durations after Google Maps adjustment
             route['duration'] = sum([step['duration'] for step in route['steps']])
@@ -354,19 +364,36 @@ class OsrmEngine(object):
         print('get_routing that can\'t use lookup table: {}'.format(ROUTING_USES_ENGINE), file=open(lookup_stats_file, 'a+'))
 
     def print_key_stats(self, key_stats_file, found_keys_file=None, unfound_keys_file=None):
-        print('unique links with traffic data used: {}'.format(len(FOUND_KEYS)), file=open(key_stats_file, 'w+'))
-        print('unique links without traffic data used: {}'.format(len(UNFOUND_KEYS_DICT)), file=open(key_stats_file, 'a+'))
+        global FOUND_KEYS_DICT, UNFOUND_KEYS_DICT
 
+        total_found_key_calls = 0
         if found_keys_file:
             with open(found_keys_file, 'a+', newline='') as f:
                 writer = csv.writer(f)
-                for key in FOUND_KEYS:
-                    writer.writerow(list(key))
+                for key in FOUND_KEYS_DICT.keys():
+                    key_row = list(key)
+                    key_row.append(FOUND_KEYS_DICT[key][0])
+                    key_row.append(FOUND_KEYS_DICT[key][1])
+                    writer.writerow(key_row)
 
+                    total_found_key_calls += FOUND_KEYS_DICT[key][1]
+
+        total_unfound_key_calls = 0
         if unfound_keys_file:
             with open(unfound_keys_file, 'a+', newline='') as f:
                 writer = csv.writer(f)
                 for key in UNFOUND_KEYS_DICT.keys():
                     key_row = list(key)
-                    key_row.append(UNFOUND_KEYS_DICT[key])
+                    key_row.append(UNFOUND_KEYS_DICT[key][0])
+                    key_row.append(UNFOUND_KEYS_DICT[key][1])
                     writer.writerow(key_row)
+
+                    total_unfound_key_calls += UNFOUND_KEYS_DICT[key][1]
+
+        print('unique links with traffic data used: {}'.format(len(FOUND_KEYS_DICT)), file=open(key_stats_file, 'w+'))
+        print('number of observations on links with traffic data: {}'.format(total_found_key_calls), file=open(key_stats_file, 'a+'))
+        print('unique links without traffic data used: {}'.format(len(UNFOUND_KEYS_DICT)), file=open(key_stats_file, 'a+'))
+        print('number of observations on links without traffic data: {}'.format(total_unfound_key_calls), file=open(key_stats_file, 'a+'))
+
+        FOUND_KEYS_DICT = dict()
+        UNFOUND_KEYS_DICT = dict()
